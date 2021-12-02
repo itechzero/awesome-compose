@@ -1,0 +1,144 @@
+version: '3.9'
+
+services:
+
+  redis:
+    container_name: redis
+    image: xvscode/redis
+    environment:
+      - TZ=Asia/Shanghai
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    sysctls:
+      net.core.somaxconn: 65535
+    networks:
+      - default
+    volumes:
+      - ./conf/redis/redis.conf:/etc/redis/redis.conf:rw
+      - ./data/redis:/data
+
+  mongo:
+    container_name: mongo
+    image: mongo:latest
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: 123456
+    ports:
+      - "27017:27017"
+    networks:
+      - default
+    volumes:
+      - ./data/mongo:/data/db
+
+  mysql:
+    container_name: mysql
+    image: xvscode/mysql
+    environment:
+      - TZ=Asia/Shanghai
+      - MYSQL_ROOT_PASSWORD=secret
+      - MYSQL_DATABASE=demo
+      - MYSQL_USER=db_user
+      - MYSQL_PASSWORD=secret
+    privileged: true
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    networks:
+      - default
+    command:
+      --default-authentication-plugin=mysql_native_password
+    volumes:
+      #- ./conf/mysql/my.cnf:/etc/mysql/my.cnf
+      - ./data/mysql:/var/lib/mysql
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: xvscode/rabbitmq
+    hostname: rabbitmq
+    environment:
+      - TZ=Asia/Shanghai
+    restart: unless-stopped
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    networks:
+      - default
+    volumes:
+      - ./data/rabbitmq:/var/lib/rabbitmq/mnesia
+
+  nats:
+    container_name: nats
+    image: nats:alpine
+    restart: unless-stopped
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    networks:
+      - default
+
+  jaeger:
+    container_name: jaeger
+    image: jaegertracing/all-in-one:latest
+    restart: unless-stopped
+    ports:
+      - "5775:5775/udp"
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+      - "5778:5778"
+      - "16686:16686"
+      - "14268:14268"
+      - "14250:14250"
+    networks:
+      - default
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    hostname: prometheus
+    restart: unless-stopped
+    volumes:
+      - ./conf/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - default
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    hostname: grafana
+    restart: unless-stopped
+    volumes:
+      - ./data/grafana:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=${ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    ports:
+      - "3000:3000"
+    networks:
+      - default
+
+  elasticsearch:
+    image:  docker.elastic.co/elasticsearch/elasticsearch:7.15.2
+    container_name: elasticsearch
+    restart: unless-stopped
+    environment:
+      ELASTIC_USERNAME: elastic
+      ELASTIC_PASSWORD: elastic
+      ES_JAVA_OPTS: -Xms256m -Xmx256m
+      node.name: es-node
+      discovery.type: single-node
+      bootstrap.memory_lock: "true"
+    networks:
+      - default
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+
+networks:
+  default:
+    external: true
+    name: dev-network
