@@ -24,7 +24,7 @@ services:
     restart: unless-stopped
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: 123456
+      MONGO_INITDB_ROOT_PASSWORD: secret
     ports:
       - "27017:27017"
     networks:
@@ -115,7 +115,7 @@ services:
       - ./data/grafana:/var/lib/grafana # chown -R 472:472 grafana/
     environment:
       - GF_SECURITY_ADMIN_USER=${ADMIN_USER:-admin}
-      - GF_SECURITY_ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${ADMIN_PASSWORD:-secret}
       - GF_USERS_ALLOW_SIGN_UP=false
     ports:
       - "3000:3000"
@@ -128,7 +128,7 @@ services:
     restart: unless-stopped
     environment:
       ELASTIC_USERNAME: elastic
-      ELASTIC_PASSWORD: elastic
+      ELASTIC_PASSWORD: secret
       ES_JAVA_OPTS: -Xms256m -Xmx256m
       node.name: es-node
       discovery.type: single-node
