@@ -110,6 +110,7 @@ services:
     container_name: grafana
     hostname: grafana
     restart: unless-stopped
+    user: 472
     volumes:
       - ./data/grafana:/var/lib/grafana
     environment:
