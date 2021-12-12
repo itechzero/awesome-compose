@@ -112,7 +112,7 @@ services:
     restart: unless-stopped
     user: "472"
     volumes:
-      - ./data/grafana:/var/lib/grafana
+      - ./data/grafana:/var/lib/grafana # chown -R 472:472 grafana/
     environment:
       - GF_SECURITY_ADMIN_USER=${ADMIN_USER:-admin}
       - GF_SECURITY_ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
