@@ -3,20 +3,20 @@ version: '3.9'
 services:
 
   redis:
+    image: redis:6.2-alpine
     container_name: redis
-    image: xvscode/redis
-    environment:
-      - TZ=Asia/Shanghai
     restart: unless-stopped
-    ports:
-      - "6379:6379"
+    environment:
+      TZ: Asia/Shanghai
     sysctls:
       net.core.somaxconn: 65535
+    ports:
+      - "6379:6379"
     networks:
       - default
     volumes:
-      - ./conf/redis/redis.conf:/etc/redis/redis.conf:rw
       - ./data/redis:/data
+    command: redis-server --requirepass secret --appendonly yes --daemonize no
 
   mongo:
     container_name: mongo
@@ -34,13 +34,13 @@ services:
 
   mysql:
     container_name: mysql
-    image: xvscode/mysql
+    image: mysql:8.0.26
     environment:
-      - TZ=Asia/Shanghai
-      - MYSQL_ROOT_PASSWORD=secret
-      - MYSQL_DATABASE=demo
-      - MYSQL_USER=db_user
-      - MYSQL_PASSWORD=secret
+      TZ: Asia/Shanghai
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: demo
+      MYSQL_USER: db_user
+      MYSQL_PASSWORD: secret
     privileged: true
     restart: unless-stopped
     ports:
@@ -50,15 +50,16 @@ services:
     command:
       --default-authentication-plugin=mysql_native_password
     volumes:
-      #- ./conf/mysql/my.cnf:/etc/mysql/my.cnf
       - ./data/mysql:/var/lib/mysql
 
   rabbitmq:
     container_name: rabbitmq
-    image: xvscode/rabbitmq
+    image: rabbitmq:management-alpine
     hostname: rabbitmq
     environment:
-      - TZ=Asia/Shanghai
+      TZ: Asia/Shanghai
+      RABBITMQ_DEFAULT_USER: root
+      RABBITMQ_DEFAULT_PASS: secret
     restart: unless-stopped
     ports:
       - "15672:15672"
@@ -66,7 +67,7 @@ services:
     networks:
       - default
     volumes:
-      - ./data/rabbitmq:/var/lib/rabbitmq/mnesia
+      - ./data/rabbitmq:/var/lib/rabbitmq
 
   nats:
     container_name: nats
@@ -114,9 +115,9 @@ services:
     volumes:
       - ./data/grafana:/var/lib/grafana # chown -R 472:472 grafana/
     environment:
-      - GF_SECURITY_ADMIN_USER=${ADMIN_USER:-admin}
-      - GF_SECURITY_ADMIN_PASSWORD=${ADMIN_PASSWORD:-secret}
-      - GF_USERS_ALLOW_SIGN_UP=false
+      GF_SECURITY_ADMIN_USER: ${ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${ADMIN_PASSWORD:-secret}
+      GF_USERS_ALLOW_SIGN_UP: false
     ports:
       - "3000:3000"
     networks:
