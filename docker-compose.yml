@@ -52,6 +52,17 @@ services:
     volumes:
       - ./data/mysql:/var/lib/mysql
 
+  zookeeper:
+    image: zookeeper:latest
+    container_name: zookeeper
+    restart: unless-stopped
+    ports:
+      - "2181:2181"
+    networks:
+      - default
+    volumes:
+      - ./data/zookeeper:/data
+
   rabbitmq:
     container_name: rabbitmq
     image: rabbitmq:management-alpine
@@ -78,6 +89,47 @@ services:
       - "8222:8222"
     networks:
       - default
+
+  kafka:
+    image: wurstmeister/kafka
+    container_name: kafka
+    restart: unless-stopped
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_HOST_NAME: 127.0.0.1
+      KAFKA_ADVERTISED_PORT: 9092
+      KAFKA_DELETE_TOPIC_ENABLE: 'true'
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_MESSAGE_MAX_BYTES: 10000000
+      KAFKA_REPLICA_FETCH_MAX_BYTES: 10000000
+      KAFKA_GROUP_MAX_SESSION_TIMEOUT_MS: 60000
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_DELETE_RETENTION_MS: 1000
+    ports:
+      - "9092:9092"
+    networks:
+      - default
+    volumes:
+      - ./data/kafka:/kafka
+    depends_on:
+      - zookeeper
+
+  kafka-manager:
+    image: sheepkiller/kafka-manager
+    container_name: kafka-manager
+    restart: unless-stopped
+    environment:
+      ZK_HOSTS: zookeeper:2181
+      KAFKA_BROKERS: kafka:9092
+      APPLICATION_SECRET: secret
+      KM_ARGS: -Djava.net.preferIPv4Stack=true
+    ports:
+      - "39000:9000"
+    networks:
+      - default
+    depends_on:
+      - zookeeper
+      - kafka
 
   jaeger:
     container_name: jaeger
@@ -111,9 +163,8 @@ services:
     container_name: grafana
     hostname: grafana
     restart: unless-stopped
-    user: "472"
     volumes:
-      - ./data/grafana:/var/lib/grafana # chown -R 472:472 grafana/
+      - ./data/grafana:/var/lib/grafana
     environment:
       GF_SECURITY_ADMIN_USER: ${ADMIN_USER:-admin}
       GF_SECURITY_ADMIN_PASSWORD: ${ADMIN_PASSWORD:-secret}
