@@ -1,6 +1,19 @@
 # DevEnv
 Quick Create a Development Environment
 
+## Support
+- redis
+- mongo
+- mysql
+- zookeeper & zookeeper-ui
+- rabbitmq
+- nats
+- kafka & kafka-manager
+- elasticsearch
+- jaeger
+- prometheus
+- grafana
+
 ## Use
 ~~~
 docker network create -d bridge dev-network

@@ -55,13 +55,32 @@ services:
   zookeeper:
     image: zookeeper:latest
     container_name: zookeeper
+    hostname: zookeeper
     restart: unless-stopped
+    environment:
+      ZOO_MY_ID: 1
     ports:
       - "2181:2181"
     networks:
       - default
     volumes:
       - ./data/zookeeper:/data
+
+  zkui:
+    image: juris/zkui
+    container_name: zkui
+    hostname: zkui
+    restart: unless-stopped
+    privileged: true
+    environment:
+      ZK_SERVER: zookeeper:2181
+    ports:
+      - "39001:9090"
+    networks:
+      - default
+    depends_on:
+      - zookeeper
+
 
   rabbitmq:
     container_name: rabbitmq
@@ -121,7 +140,6 @@ services:
     environment:
       ZK_HOSTS: zookeeper:2181
       KAFKA_BROKERS: kafka:9092
-      APPLICATION_SECRET: secret
       KM_ARGS: -Djava.net.preferIPv4Stack=true
     ports:
       - "39000:9000"
@@ -130,6 +148,23 @@ services:
     depends_on:
       - zookeeper
       - kafka
+
+  elasticsearch:
+    image:  docker.elastic.co/elasticsearch/elasticsearch:7.15.2
+    container_name: elasticsearch
+    restart: unless-stopped
+    environment:
+      ELASTIC_USERNAME: elastic
+      ELASTIC_PASSWORD: secret
+      ES_JAVA_OPTS: -Xms256m -Xmx256m
+      node.name: es-node
+      discovery.type: single-node
+      bootstrap.memory_lock: "true"
+    networks:
+      - default
+    ports:
+      - "9200:9200"
+      - "9300:9300"
 
   jaeger:
     container_name: jaeger
@@ -173,23 +208,6 @@ services:
       - "3000:3000"
     networks:
       - default
-
-  elasticsearch:
-    image:  docker.elastic.co/elasticsearch/elasticsearch:7.15.2
-    container_name: elasticsearch
-    restart: unless-stopped
-    environment:
-      ELASTIC_USERNAME: elastic
-      ELASTIC_PASSWORD: secret
-      ES_JAVA_OPTS: -Xms256m -Xmx256m
-      node.name: es-node
-      discovery.type: single-node
-      bootstrap.memory_lock: "true"
-    networks:
-      - default
-    ports:
-      - "9200:9200"
-      - "9300:9300"
 
 networks:
   default:
