@@ -30,6 +30,6 @@ docker-compose up -d
 
 ### go install
 ~~~
-source sh/go.sh
-source sh/go.sh -v 1.17.2
+source scripts/go.sh
+source scripts/go.sh -v 1.17.2
 ~~~
