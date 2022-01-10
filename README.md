@@ -25,6 +25,7 @@ git clone https://github.com/itechzero/DevEnv.git Your Project Name
 
 ~~~
 cd Your Project Name
+sudo chmod -R 777 data/*
 docker-compose up -d
 ~~~
 
