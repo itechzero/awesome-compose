@@ -20,12 +20,11 @@ docker network create -d bridge dev-network
 ~~~
 
 ~~~
-git clone https://github.com/itechzero/DevEnv.git Your Project Name
+git clone https://github.com/itechzero/DevEnv.git $HOME/Your Project Name
 ~~~
 
 ~~~
-cd Your Project Name
-sudo chmod -R 777 data/*
+cd $HOME/Your Project Name
 docker-compose up -d
 ~~~
 
@@ -33,4 +32,10 @@ docker-compose up -d
 ~~~
 source scripts/go.sh
 source scripts/go.sh -v 1.17.2
+~~~
+
+### 可能遇到的问题
+grafana文件夹权限不够
+~~~
+sudo chmod -R 777 $HOME/Project Name/data/grafana/*
 ~~~
