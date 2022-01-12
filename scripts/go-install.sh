@@ -47,7 +47,7 @@ ipIsConnect(){
 
 setupEnv(){
     if [[ -z `echo $GOPATH` ]];then
-        GOPATH="/go"
+        GOPATH="$HOME/go"
         mkdir -p $GOPATH
         echo "GOPATH值为: `colorEcho $BLUE $GOPATH`"
         echo "export GOROOT=/usr/local/go" >> /etc/profile
