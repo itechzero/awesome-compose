@@ -97,7 +97,7 @@ services:
     networks:
       - default
     volumes:
-      - ./data/rabbitmq:/var/lib/rabbitmq
+      - ./data/rabbitmq/data:/var/lib/rabbitmq
 
   nats:
     container_name: nats
