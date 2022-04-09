@@ -13,6 +13,7 @@ Quick Create a Development Environment
 - jaeger
 - prometheus
 - grafana
+- vault
 
 ## Use
 ~~~
