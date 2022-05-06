@@ -108,6 +108,18 @@ services:
       - "8222:8222"
     networks:
       - default
+    command: nats-server -m 8222 --user root --pass secret
+
+  nats-streaming:
+    image: nats-streaming:alpine
+    container_name: nats-streaming
+    restart: unless-stopped
+    ports:
+      - "4223:4222"
+      - "8223:8222"
+    networks:
+      - default
+    command: nats-streaming-server -m 8222 --user root --pass secret
 
   kafka:
     image: wurstmeister/kafka
