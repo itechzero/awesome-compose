@@ -232,7 +232,6 @@ services:
     cap_add:
       - IPC_LOCK
     volumes:
-      - ./conf/vault:/vault/config
       - ./data/vault:/vault/data
     networks:
       - default
