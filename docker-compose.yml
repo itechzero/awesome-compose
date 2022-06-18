@@ -7,50 +7,51 @@ services:
     container_name: redis
     restart: unless-stopped
     environment:
-      TZ: Asia/Shanghai
+      TZ: ${TZ}
     sysctls:
-      net.core.somaxconn: 65535
+      net.core.somaxconn: 1024
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT}:6379"
     networks:
       - default
     volumes:
-      - ./data/redis:/data
-    command: redis-server --requirepass secret --appendonly yes --daemonize no
+      - redis-vol/:/data
+    command: redis-server --requirepass ${ROOT_PASSWORD} --appendonly yes --daemonize no
 
   mongo:
     container_name: mongo
     image: mongo:4.4
     restart: unless-stopped
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: secret
+      TZ: ${TZ}
+      MONGO_INITDB_ROOT_USERNAME: ${ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${ROOT_PASSWORD}
     ports:
-      - "27017:27017"
+      - "${MONGO_PORT}:27017"
     networks:
       - default
     volumes:
-      - ./data/mongo:/data/db
+      - mongo-vol:/data/db
 
   mysql:
     container_name: mysql
     image: mysql:8.0.26
     environment:
-      TZ: Asia/Shanghai
-      MYSQL_ROOT_PASSWORD: secret
+      TZ: ${TZ}
+      MYSQL_ROOT_PASSWORD: ${ROOT_PASSWORD}
       MYSQL_DATABASE: demo
       MYSQL_USER: db_user
-      MYSQL_PASSWORD: secret
+      MYSQL_PASSWORD: ${ROOT_PASSWORD}
     privileged: true
     restart: unless-stopped
     ports:
-      - "3306:3306"
+      - "${MYSQL_PORT}:3306"
     networks:
       - default
     command:
       --default-authentication-plugin=mysql_native_password
     volumes:
-      - ./data/mysql:/var/lib/mysql
+      - data-vol:/var/lib/mysql
 
   zookeeper:
     image: zookeeper:latest
@@ -58,13 +59,14 @@ services:
     hostname: zookeeper
     restart: unless-stopped
     environment:
+      TZ: ${TZ}
       ZOO_MY_ID: 1
     ports:
-      - "2181:2181"
+      - "${ZOOKEEPER_PORT}:2181"
     networks:
       - default
     volumes:
-      - ./data/zookeeper:/data
+      - zookeeper-vol:/data
 
   zkui:
     image: juris/zkui
@@ -73,6 +75,7 @@ services:
     restart: unless-stopped
     privileged: true
     environment:
+      TZ: ${TZ}
       ZK_SERVER: zookeeper:2181
     ports:
       - "39001:9090"
@@ -87,17 +90,17 @@ services:
     image: rabbitmq:management-alpine
     hostname: rabbitmq
     environment:
-      TZ: Asia/Shanghai
-      RABBITMQ_DEFAULT_USER: root
-      RABBITMQ_DEFAULT_PASS: secret
+      TZ: ${TZ}
+      RABBITMQ_DEFAULT_USER: ${ROOT_USERNAME}
+      RABBITMQ_DEFAULT_PASS: ${ROOT_PASSWORD}
     restart: unless-stopped
     ports:
-      - "15672:15672"
+      - "${RABBITMQ_PORT}:15672"
       - "5672:5672"
     networks:
       - default
     volumes:
-      - ./data/rabbitmq/data:/var/lib/rabbitmq
+      - data-vol:/var/lib/rabbitmq
 
   nats:
     container_name: nats
@@ -108,18 +111,20 @@ services:
       - "8222:8222"
     networks:
       - default
-    command: nats-server -m 8222 --user root --pass secret
+    command: nats-server -m 8222 --user ${ROOT_USERNAME} --pass ${ROOT_PASSWORD}
 
   nats-streaming:
     image: nats-streaming:alpine
     container_name: nats-streaming
     restart: unless-stopped
+    environment:
+      TZ: ${TZ}
     ports:
       - "4223:4222"
       - "8223:8222"
     networks:
       - default
-    command: nats-streaming-server -m 8222 --user root --pass secret
+    command: nats-streaming-server -m 8222 --user ${ROOT_USERNAME} --pass ${ROOT_PASSWORD}
 
   kafka:
     image: wurstmeister/kafka
@@ -166,6 +171,7 @@ services:
     container_name: elasticsearch
     restart: unless-stopped
     environment:
+      TZ: ${TZ}
       ELASTIC_USERNAME: elastic
       ELASTIC_PASSWORD: secret
       ES_JAVA_OPTS: -Xms256m -Xmx256m
@@ -182,6 +188,8 @@ services:
     container_name: jaeger
     image: jaegertracing/all-in-one:latest
     restart: unless-stopped
+    environment:
+      TZ: ${TZ}
     ports:
       - "5775:5775/udp"
       - "6831:6831/udp"
@@ -198,6 +206,8 @@ services:
     container_name: prometheus
     hostname: prometheus
     restart: unless-stopped
+    environment:
+      TZ: ${TZ}
     volumes:
       - ./conf/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
@@ -210,35 +220,48 @@ services:
     container_name: grafana
     hostname: grafana
     restart: unless-stopped
-    volumes:
-      - ./data/grafana:/var/lib/grafana
+    privileged: true
     environment:
-      GF_SECURITY_ADMIN_USER: ${ADMIN_USER:-admin}
-      GF_SECURITY_ADMIN_PASSWORD: ${ADMIN_PASSWORD:-secret}
+      TZ: ${TZ}
+      GF_SECURITY_ADMIN_USER: ${ROOT_USERNAME}
+      GF_SECURITY_ADMIN_PASSWORD: ${ROOT_PASSWORD}
       GF_USERS_ALLOW_SIGN_UP: 'false'
     ports:
       - "3000:3000"
     networks:
       - default
+    volumes:
+      - data-vol:/var/lib/grafana
 
   vault:
     container_name: vault
     image: hashicorp/vault:latest
     restart: unless-stopped
     environment:
-      VAULT_ADDR: http://127.0.0.1:8200
-      VAULT_API_ADDR: http://127.0.0.1:8200
-      VAULT_DEV_ROOT_TOKEN_ID: secret
-    cap_add:
-      - IPC_LOCK
-    volumes:
-      - ./data/vault:/vault/data
+      TZ: ${TZ}
+      VAULT_DEV_ROOT_TOKEN_ID: ${ROOT_PASSWORD}
     networks:
       - default
     ports:
-      - "8200:8200"
+      - "${VAULT_PORT}:8200"
+    volumes:
+      - data-vol:/vault/data
+
+volumes:
+  data-vol:
+    driver: local
+    name: data-volume
+  redis-vol:
+    driver: local
+    name: redis-volume
+  mongo-vol:
+    driver: local
+    name: mongo-volume
+  zookeeper-vol:
+    driver: local
+    name: zookeeper-volume
 
 networks:
   default:
     external: true
-    name: dev-network
+    name: ${NETWORKS_NAME}
