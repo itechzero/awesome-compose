@@ -240,10 +240,12 @@ services:
     environment:
       TZ: ${TZ}
       VAULT_DEV_ROOT_TOKEN_ID: ${ROOT_PASSWORD}
-    networks:
-      - default
+    cap_add:
+      - IPC_LOCK
     ports:
       - "${VAULT_PORT}:8200"
+    networks:
+      - default
     volumes:
       - data-vol:/vault/data
 
