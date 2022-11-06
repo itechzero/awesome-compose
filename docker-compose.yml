@@ -15,7 +15,7 @@ services:
     networks:
       - default
     volumes:
-      - redis-vol/:/data
+      - redis-vol:/data
     command: redis-server --requirepass ${ROOT_PASSWORD} --appendonly yes --daemonize no
 
   mongo:
@@ -31,7 +31,7 @@ services:
     networks:
       - default
     volumes:
-      - mongo-vol:/data/db
+      - mongodb-vol:/data/db
 
   mysql:
     container_name: mysql
@@ -39,9 +39,7 @@ services:
     environment:
       TZ: ${TZ}
       MYSQL_ROOT_PASSWORD: ${ROOT_PASSWORD}
-      MYSQL_DATABASE: demo
-      MYSQL_USER: db_user
-      MYSQL_PASSWORD: ${ROOT_PASSWORD}
+      MYSQL_DATABASE: grafana
     privileged: true
     restart: unless-stopped
     ports:
@@ -51,7 +49,19 @@ services:
     command:
       --default-authentication-plugin=mysql_native_password
     volumes:
-      - data-vol:/var/lib/mysql
+      - mysql-vol:/var/lib/mysql
+
+  consul:
+    container_name: consul
+    image: consul
+    restart: unless-stopped
+    ports:
+      - "8500:8500"
+    networks:
+      - default
+    command: [ "consul","agent","-dev","-bootstrap","-data-dir","/consul/data","-ui","-bind","127.0.0.1","-client","0.0.0.0" ]
+    volumes:
+      - consul-vol:/consul/data
 
   zookeeper:
     image: zookeeper:latest
@@ -100,7 +110,7 @@ services:
     networks:
       - default
     volumes:
-      - data-vol:/var/lib/rabbitmq
+      - rabbitmq-vol:/var/lib/rabbitmq
 
   nats:
     container_name: nats
@@ -226,16 +236,21 @@ services:
       GF_SECURITY_ADMIN_USER: ${ROOT_USERNAME}
       GF_SECURITY_ADMIN_PASSWORD: ${ROOT_PASSWORD}
       GF_USERS_ALLOW_SIGN_UP: 'false'
+      GF_DATABASE_HOST: mysql:3306
+      GF_DATABASE_NAME: grafana
+      GF_DATABASE_USER: root
+      GF_DATABASE_PASSWORD: ${ROOT_PASSWORD}
+      GF_DATABASE_TYPE: mysql
     ports:
-      - "3000:3000"
+      - "33000:3000"
     networks:
       - default
     volumes:
-      - data-vol:/var/lib/grafana
+      - grafana-vol:/var/lib/grafana
 
   vault:
     container_name: vault
-    image: hashicorp/vault:latest
+    image: vault:latest
     restart: unless-stopped
     environment:
       TZ: ${TZ}
@@ -246,22 +261,29 @@ services:
       - "${VAULT_PORT}:8200"
     networks:
       - default
-    volumes:
-      - data-vol:/vault/data
 
 volumes:
-  data-vol:
-    driver: local
-    name: data-volume
   redis-vol:
     driver: local
     name: redis-volume
-  mongo-vol:
+  mysql-vol:
     driver: local
-    name: mongo-volume
+    name: mysql-volume
+  mongodb-vol:
+    driver: local
+    name: mongodb-volume
+  consul-vol:
+    driver: local
+    name: consul-volume
+  rabbitmq-vol:
+    driver: local
+    name: rabbitmq-volume
   zookeeper-vol:
     driver: local
     name: zookeeper-volume
+  grafana-vol:
+    driver: local
+    name: grafana-volume
 
 networks:
   default:
