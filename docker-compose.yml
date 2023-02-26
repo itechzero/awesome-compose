@@ -20,7 +20,7 @@ services:
 
   mongo:
     container_name: mongo
-    image: mongo:4.4
+    image: mongo:5
     restart: unless-stopped
     environment:
       TZ: ${TZ}
