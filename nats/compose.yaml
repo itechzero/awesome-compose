@@ -1,0 +1,14 @@
+version: '3.9'
+
+services:
+
+  nats:
+    container_name: nats
+    image: nats:alpine
+    restart: unless-stopped
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    networks:
+      - default
+    command: nats-server -m 8222 --user ${ROOT_USERNAME} --pass ${ROOT_PASSWORD}

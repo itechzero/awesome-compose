@@ -1,0 +1,18 @@
+version: '3.9'
+
+services:
+
+  vault:
+    image: vault:latest
+    container_name: vault
+    hostname: vault
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ}
+      VAULT_DEV_ROOT_TOKEN_ID: ${ROOT_PASSWORD}
+    cap_add:
+      - IPC_LOCK
+    ports:
+      - "${VAULT_PORT}:8200"
+    networks:
+      - default

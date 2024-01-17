@@ -1,0 +1,25 @@
+version: '3.9'
+
+services:
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:management-alpine
+    hostname: rabbitmq
+    environment:
+      TZ: ${TZ}
+      RABBITMQ_DEFAULT_USER: ${ROOT_USERNAME}
+      RABBITMQ_DEFAULT_PASS: ${ROOT_PASSWORD}
+    restart: unless-stopped
+    ports:
+      - "${RABBITMQ_PORT}:15672"
+      - "5672:5672"
+    networks:
+      - default
+    volumes:
+      - rabbitmq-vol:/var/lib/rabbitmq
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "check_running_apps" ]
+      interval: 5s
+      timeout: 10s
+      retries: 3

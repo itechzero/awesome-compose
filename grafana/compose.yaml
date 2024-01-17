@@ -1,0 +1,26 @@
+version: '3.9'
+
+services:
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    hostname: grafana
+    restart: unless-stopped
+    privileged: true
+    environment:
+      TZ: ${TZ}
+      GF_SECURITY_ADMIN_USER: ${ROOT_USERNAME}
+      GF_SECURITY_ADMIN_PASSWORD: ${ROOT_PASSWORD}
+      GF_USERS_ALLOW_SIGN_UP: 'false'
+      GF_DATABASE_HOST: mysql:3306
+      GF_DATABASE_NAME: grafana
+      GF_DATABASE_USER: root
+      GF_DATABASE_PASSWORD: ${ROOT_PASSWORD}
+      GF_DATABASE_TYPE: mysql
+    ports:
+      - "33000:3000"
+    networks:
+      - default
+    volumes:
+      - grafana-vol:/var/lib/grafana

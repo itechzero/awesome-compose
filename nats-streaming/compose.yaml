@@ -1,0 +1,16 @@
+version: '3.9'
+
+services:
+
+  nats-streaming:
+    image: ${NATS_STREAMING_IMAGE}
+    container_name: ${NATS_STREAMING_CONTAINER_NAME}
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ}
+    ports:
+      - ${NATS_STREAMING_PORT}:4222
+      - ${NATS_STREAMING_MONITOR_PORT}:8222
+    networks:
+      - default
+    command: [ "nats-streaming-server", "-p", "4222", "-m", "8222", "-user", "$NATS_STREAMING_USERNAME", "-pass", "$NATS_STREAMING_PASSWORD" ]

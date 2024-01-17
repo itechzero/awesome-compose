@@ -1,0 +1,16 @@
+version: '3.9'
+
+services:
+
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: nats-streaming
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ}
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - default
+    command: nats-streaming-server -m 8222 --user ${ROOT_USERNAME} --pass ${ROOT_PASSWORD}

@@ -1,0 +1,21 @@
+version: '3.9'
+
+services:
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.15.2
+    container_name: elasticsearch
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ}
+      ELASTIC_USERNAME: elastic
+      ELASTIC_PASSWORD: secret
+      ES_JAVA_OPTS: -Xms256m -Xmx256m
+      node.name: es-node
+      discovery.type: single-node
+      bootstrap.memory_lock: "true"
+    networks:
+      - default
+    ports:
+      - "9200:9200"
+      - "9300:9300"

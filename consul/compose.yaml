@@ -1,0 +1,15 @@
+version: '3.9'
+
+services:
+
+  consul:
+    container_name: consul
+    image: consul
+    restart: unless-stopped
+    ports:
+      - "8500:8500"
+    networks:
+      - default
+    command: [ "consul","agent","-dev","-bootstrap","-data-dir","/consul/data","-ui","-bind","127.0.0.1","-client","0.0.0.0" ]
+    volumes:
+      - consul-vol:/consul/data
