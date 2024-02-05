@@ -3,26 +3,30 @@ version: '3.9'
 services:
 
   mysql:
-    container_name: mysql
-    image: mysql:8.0.26
-    env_file:
-      - ../.env
-    environment:
-      MYSQL_ROOT_PASSWORD: ${ROOT_PASSWORD}
-      MYSQL_DATABASE: example
-    privileged: true
+    image: ${MYSQL_IMAGE}
+    container_name: ${MYSQL_CONTAINER_NAME}
     restart: unless-stopped
+    privileged: true
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: ${MYSQL_ALLOW_EMPTY_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
     ports:
-      - "${MYSQL_PORT}:3306"
+      - ${MYSQL_PORT}:3306
     networks:
       - default
-    command:
-      --default-authentication-plugin=mysql_native_password
+    command: [
+      "--default-authentication-plugin=mysql_native_password",
+      "--lower_case_table_names=0",
+      "--character-set-server=utf8mb4",
+      "--collation-server=utf8mb4_unicode_ci",
+    ]
     volumes:
-      - mysql_data:/var/lib/mysql
+      - data:/var/lib/mysql
 
 volumes:
-  mysql_data: {}
+  data:
+    name: ${MYSQL_VOLUME}
 
 networks:
-  default: {}
+  default:
+    name: ${MYSQL_NETWORK}

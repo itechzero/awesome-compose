@@ -13,4 +13,18 @@ services:
       - ${NATS_STREAMING_MONITOR_PORT}:8222
     networks:
       - default
-    command: [ "nats-streaming-server", "-p", "4222", "-m", "8222", "-user", "$NATS_STREAMING_USERNAME", "-pass", "$NATS_STREAMING_PASSWORD" ]
+    command: [
+      "nats-streaming-server", "-p", "4222", "-m", "8222",
+      "-store", "file", "-dir", "/data",
+      "-user", "$NATS_STREAMING_USERNAME", "-pass", "$NATS_STREAMING_PASSWORD"
+    ]
+    volumes:
+      - data:/data
+
+volumes:
+  data:
+    name: ${NATS_STREAMING_VOLUME_NAME}
+
+networks:
+  default:
+    name: ${NATS_STREAMING_NETWORK}
