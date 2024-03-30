@@ -24,6 +24,7 @@ services:
 volumes:
   data:
     name: ${NATS_STREAMING_VOLUME_NAME}
+    driver: local
 
 networks:
   default:

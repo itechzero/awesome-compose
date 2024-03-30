@@ -26,6 +26,7 @@ services:
 volumes:
   data:
     name: ${MYSQL_VOLUME}
+    driver: local
 
 networks:
   default:

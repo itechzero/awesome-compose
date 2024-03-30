@@ -1,0 +1,11 @@
+version: '3.9'
+
+services:
+  wp:
+    image: php:8.3-fpm-alpine3.18
+    container_name: wp
+    restart: unless-stopped
+    volumes:
+      - :/var/www/html
+    networks:
+      - default
